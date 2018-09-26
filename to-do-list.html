@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<link rel="stylesheet" href="style.css">
+		<link rel="icon" href="pencil-icon.png">
+		<title>To Do List</title>
+	</head>
+
+	<body onload="">
+		<p id="page-links"> <a href="about-me.html">Personal Bio</a><span> | </span><a href="to-do-list.html">To Do List</a><span> | </span><a href="photo-gallery.html">Photo Gallery</a></p>
+		<h2 id="to-do-header" class="center-text">TO DO LIST</h2>
+
+		<div id="task-alert" style="display:none;">
+			<p><br>You have a task due in 5 minutes!<br></p>
+			<button onclick="dismissNotification()">Dismiss</button>
+		</div>
+
+		<div class="center-text">
+			<br>Task Description: <br><input id="description" type="text"><br><br>
+			Date/Time Due: <br><input id="deadline" type="datetime-local"><br><br>
+			Category: <br>
+			<select id="category">
+				<option value="red">Homework</option>
+				<option value="orange">Work</option>
+				<option value="yellow">Home</option>
+				<option value="green">Chores</option>
+			</select>
+			<button id="add-category" onclick="typeCategory();">Add New Category</button>
+			<p id="placeholder"></p><br>
+			<select id="coloroption" style="display: None">
+				<option value="red">Red</option>
+				<option value="orange">Orange</option>
+				<option value="yellow">Yellow</option>
+				<option value="green">Green</option>
+				<option value="blue">Blue</option>
+				<option value="purple">Purple</option>
+			</select>
+			<button onclick="addItem();">Add Item</button>
+		</div>
+
+		<table class="sortable" id="task-list" border=1><br>
+			<tr>
+				<th onclick="sortTable(0)">Date Added</th>
+				<th onclick="sortTable(1)">Description</th>
+				<th onclick="sortTable(2)">Deadline</th>
+				<th onclick="sortTable(3)">Category</th>
+				<th onclick="sortTable(4)">Incomplete vs. Complete</th>
+				<th onclick="sortTable(5)">Remove</th>
+			</tr>
+		</table>
+
+		<script>
+
+		var taskCount = 0;
+		var colors = [];
+
+		function addItem() {
+			var description = document.getElementById("description");
+			var deadline = document.getElementById("deadline");
+			var category = document.getElementById("category");
+			var checkbox = document.createElement("INPUT");
+			checkbox.type = "checkbox";
+			var today = new Date();
+			var date = today.getFullYear()+'-'+(today.getMonth()+1)+'-'+today.getDate()+'T'+today.getHours()+':'+today.getMinutes();
+			var remove = document.createElement("INPUT");
+			remove.type = "button";
+			remove.value = "X";
+			var index = Number(taskCount);
+			remove.setAttribute("onclick", "removeTask(this);");
+
+			var tasklist = document.getElementById("task-list");
+			var row = tasklist.insertRow(1);
+			row.text = category.text;
+			var cell1 = row.insertCell(0);
+			var cell2 = row.insertCell(1);
+			var cell3 = row.insertCell(2);
+			var cell4 = row.insertCell(3);
+			var cell5 = row.insertCell(4);
+			var cell6 = row.insertCell(5);
+
+			cell1.innerHTML = date;
+			cell2.innerHTML = description.value;
+			cell3.innerHTML = deadline.value;
+			cell4.innerHTML = category.options[category.selectedIndex].text;
+			cell6.appendChild(remove);
+			cell5.appendChild(checkbox);
+
+			if(deadline.value != null && deadline.value!= "") {
+				var year = deadline.value.substring(0, 4);
+				var month = parseInt(deadline.value.substring(5, 7)) - 1;
+				var days = deadline.value.substring(8, 10);
+				var hours = deadline.value.substring(11, 13);
+				var minutes = deadline.value.substring(14);
+				var deadlineDate = new Date(year, month, days, hours, minutes);
+				deadlineMilliseconds = deadlineDate.getTime() - (5*60*1000) - Date.now();
+
+				if(deadlineMilliseconds > 0) {
+					window.setTimeout(notification, deadlineMilliseconds);
+				}
+			}
+
+
+			taskCount = Number(taskCount) + 1;
+			paint_rows();
+		}
+
+		function typeCategory() {
+			var textbox = document.createElement("INPUT");
+			textbox.type = "text";
+			textbox.id = "newcategory";
+
+			var coloroption = document.createElement("select");
+			coloroption.id = "color-option";
+			var option1 = document.createElement("option");
+			option1.value = "Red";
+			option1.text = "Red";
+			var option2 = document.createElement("option");
+			option2.value = "Orange";
+			option2.text = "Orange";
+			var option3 = document.createElement("option");
+			option3.value = "Yellow";
+			option3.text = "Yellow";
+			var option4 = document.createElement("option");
+			option4.value = "Green";
+			option4.text = "Green";
+			var option5 = document.createElement("option");
+			option5.value = "Blue";
+			option5.text = "Blue";
+			var option6 = document.createElement("option");
+			option6.value = "Purple";
+			option6.text = "Purple";
+			coloroption.appendChild(option1);
+			coloroption.appendChild(option2);
+			coloroption.appendChild(option3);
+			coloroption.appendChild(option4);
+			coloroption.appendChild(option5);
+			coloroption.appendChild(option6);
+
+			var placeholder = document.getElementById("placeholder");
+			placeholder.appendChild(textbox);
+			placeholder.appendChild(coloroption);
+
+			var button = document.getElementById("add-category");
+			var newbutton = document.createElement("INPUT");
+			newbutton.type = "button";
+			newbutton.value = "Add New Category";
+			newbutton.id = "newbutton";
+			button.replaceWith(newbutton);
+
+			newbutton.setAttribute("onclick", "addCategory();");
+		}
+
+		function addCategory() {
+			var category = document.getElementById("newcategory");
+			var coloroption = document.getElementById("color-option");
+			var option = new Option(category.value);
+			var categoryoption = document.getElementById("category");
+			categoryoption.options[categoryoption.options.length] = (option);
+			categoryoption.options[categoryoption.options.length - 1].value = coloroption.value;
+			var button = document.getElementById("newbutton");
+			var newbutton = document.createElement("INPUT");
+			newbutton.type = "button";
+			newbutton.value = "Add New Category";
+			newbutton.id = "add-category";
+			button.replaceWith(newbutton);
+			newbutton.setAttribute("onclick", "typeCategory();");
+			category.remove();
+			coloroption.remove();
+		}
+
+		function removeTask(r) {
+			var answer = window.confirm("Are you sure you would like to delete this item?");
+			if (!answer) return;
+			var i = r.parentNode.parentNode.rowIndex;
+			document.getElementById("task-list").deleteRow(i);
+			taskCount = Number(taskCount) - 1;
+		}
+
+		// https://www.w3schools.com/howto/howto_js_sort_table.asp
+		function sortTable(n) {
+			var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+			table = document.getElementById("task-list");
+			switching = true;
+			// Set the sorting direction to ascending:
+			dir = "asc";
+			/* Make a loop that will continue until
+			no switching has been done: */
+			while (switching) {
+				// Start by saying: no switching is done:
+				switching = false;
+				rows = table.rows;
+				/* Loop through all table rows (except the
+				first, which contains table headers): */
+				for (i = 1; i < (rows.length - 1); i++) {
+					shouldSwitch = false;
+					x = rows[i].getElementsByTagName("TD")[n];
+					y = rows[i + 1].getElementsByTagName("TD")[n];
+
+					if (dir == "asc") {
+						if(x.querySelector("input[type=checkbox]") !== null) { // checkbox case
+							shouldSwitch = (x.querySelector("input[type=checkbox]").checked > y.querySelector("input[type=checkbox]").checked);
+						} else {
+							shouldSwitch= x.innerHTML.toLowerCase() > y.innerHTML.toLowerCase();
+						}
+
+					} else if (dir == "desc") {
+						if (x.querySelector("input[type=checkbox]") !== null) {
+							shouldSwitch = (x.querySelector("input[type=checkbox]").checked < y.querySelector("input[type=checkbox]").checked);
+						} else {
+							shouldSwitch= x.innerHTML.toLowerCase() < y.innerHTML.toLowerCase();
+						}
+
+					}
+					if (shouldSwitch) {
+						break;
+					}
+				}
+				if (shouldSwitch) {
+					/* If a switch has been marked, make the switch
+					and mark that a switch has been done: */
+					rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+					switching = true;
+					// Each time a switch is done, increase this count by 1:
+					switchcount ++;
+				} else {
+				/* If no switching has been done AND the direction is "asc",
+				set the direction to "desc" and run the while loop again. */
+					if (switchcount == 0 && dir == "asc") {
+						dir = "desc";
+						switching = true;
+					}
+				}
+			}
+		}
+
+		function paint_rows() {
+			var table = document.getElementsByTagName('tr');
+			var rowcolumn = document.getElementsByTagName('td');
+			var categoryOption = document.getElementById("category");
+
+			colors.push(categoryOption.value);
+			for (var count = 1; count <= Number(taskCount); count++) {
+				table[count].style.backgroundColor = colors[Number(taskCount) - count];
+			}
+		}
+
+		function notification() {
+			var notification = document.getElementById('task-alert');
+			notification.style.display = "block";
+			var audio = new Audio("soundfile.wav");
+			audio.play();
+		}
+
+		function dismissNotification() {
+			var notification = document.getElementById('task-alert');
+			notification.style.display = "none";
+		}
+
+		</script>
+
+	</body>
+
+</html>
