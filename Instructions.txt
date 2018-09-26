@@ -1,0 +1,5 @@
+The required pages and their corresponding files are as follows:
+
+About Me: about-me.html
+To Do List: to-do-list.html
+Photo Gallery: photo-gallery.html
